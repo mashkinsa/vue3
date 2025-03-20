@@ -59,7 +59,7 @@ Vue.component('card', {
   <div class="card" :class="{ overdue: card.isOverdue, completed: !card.isOverdue && card.status === 'completed' }">
     <h3>{{ card.title }}</h3>
     <p>{{ card.description }}</p>
-    <p><strong>Дэдлайн:</strong> {{ card.deadline }}</p>
+    <p><strong>Дедлайн:</strong> {{ card.deadline }}</p>
     <p><strong>Создано:</strong> {{ card.createdAt }}</p>
     <p><strong>Последнее редактирование:</strong> {{ card.lastEdited }}</p>
     <p v-if="card.status === 'completed'">
