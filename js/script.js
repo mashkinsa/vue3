@@ -28,13 +28,13 @@ Vue.component('add-card-form', {
   methods: {
     addCard() {
       const newCard = {
-        id: Date.now(), 
+        id: Date.now(),
         title: this.newCardTitle,
         description: this.newCardDescription,
         deadline: this.newCardDeadline,
-        createdAt: new Date().toLocaleString(), 
-        lastEdited: new Date().toLocaleString(), 
-        status: 'planned', 
+        createdAt: new Date().toLocaleString(),
+        lastEdited: new Date().toLocaleString(),
+        status: 'planned',
       };
       this.$emit('add-card', newCard);
       this.resetForm();
@@ -50,6 +50,10 @@ Vue.component('add-card-form', {
 Vue.component('card', {
   props: {
     card: Object,
+  canEdit: {
+      type: Boolean,
+      default: true,
+    },
   },
   template: `
     <div class="card">
@@ -58,7 +62,7 @@ Vue.component('card', {
       <p><strong>Дэдлайн:</strong> {{ card.deadline }}</p>
       <p><strong>Создано:</strong> {{ card.createdAt }}</p>
       <p><strong>Последнее редактирование:</strong> {{ card.lastEdited }}</p>
-      <button @click="editCard">Редактировать</button>
+      <button v-if="canEdit" @click="editCard">Редактировать</button>
       <button @click="deleteCard">Удалить</button>
       <button @click="moveCard">Переместить</button>
     </div>
@@ -113,22 +117,67 @@ Vue.component('column', {
   },
 });
 
+Vue.component('edit-card-form', {
+  props: {
+    card: Object,
+  },
+  template: `
+    <div>
+      <h2>Редактировать карточку</h2>
+      <input v-model="editedCard.title" placeholder="Заголовок" class="input-field">
+      <textarea v-model="editedCard.description" placeholder="Описание" class="input-field"></textarea>
+      <input type="date" v-model="editedCard.deadline" class="input-field">
+      <div class="modal-buttons">
+        <button @click="saveCard" class="save">Сохранить</button>
+        <button @click="closeModal" class="cancel">Отмена</button>
+      </div>
+    </div>
+  `,
+  data() {
+    return {
+      editedCard: { ...this.card },
+    };
+  },
+  methods: {
+    saveCard() {
+      this.$emit('save-card', this.editedCard);
+    },
+    closeModal() {
+      this.$emit('close-modal');
+    },
+  },
+});
+
 new Vue({
   el: '#app',
   data() {
     return {
-      plannedTasks: [], 
-      inProgressTasks: [], 
-      testingTasks: [], 
+      plannedTasks: [],
+      inProgressTasks: [],
+      testingTasks: [],
       completedTasks: [],
+      isEditModalOpen: false,
+      selectedCard: null,
     };
   },
   methods: {
     handleAddCard(newCard) {
-      this.plannedTasks.push(newCard); 
+      this.plannedTasks.push(newCard);
     },
-    handleEditCard(card) {
-      card.lastEdited = new Date().toLocaleString(); 
+    openEditModal(card) {
+      this.selectedCard = card;
+      this.isEditModalOpen = true;
+    },
+    closeEditModal() {
+      this.isEditModalOpen = false;
+    },
+    handleSaveCard(updatedCard) {
+      updatedCard.lastEdited = new Date().toLocaleString();
+      this.plannedTasks = this.plannedTasks.map(c => (c.id === updatedCard.id ? updatedCard : c));
+      this.inProgressTasks = this.inProgressTasks.map(c => (c.id === updatedCard.id ? updatedCard : c));
+      this.testingTasks = this.testingTasks.map(c => (c.id === updatedCard.id ? updatedCard : c));
+      this.completedTasks = this.completedTasks.map(c => (c.id === updatedCard.id ? updatedCard : c));
+      this.closeEditModal();
     },
     handleDeleteCard(card) {
       this.plannedTasks = this.plannedTasks.filter(c => c.id !== card.id);

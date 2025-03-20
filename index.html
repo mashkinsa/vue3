@@ -21,7 +21,7 @@
         :is-locked="false"
         :is-full="plannedTasks.length >= 3"
         full-message="Первый столбец заполнен (максимум 3 карточки)."
-        @edit-card="handleEditCard"
+        @edit-card="openEditModal"
         @delete-card="handleDeleteCard"
         @move-card="handleMoveCard"
       ></column>
@@ -32,7 +32,7 @@
         :is-locked="false"
         :is-full="inProgressTasks.length >= 5"
         full-message="Второй столбец заполнен (максимум 5 карточек)."
-        @edit-card="handleEditCard"
+        @edit-card="openEditModal"
         @delete-card="handleDeleteCard"
         @move-card="handleMoveCard"
       ></column>
@@ -43,7 +43,7 @@
         :is-locked="false"
         :is-full="false"
         full-message=""
-        @edit-card="handleEditCard"
+        @edit-card="openEditModal"
         @delete-card="handleDeleteCard"
         @move-card="handleMoveCard"
       ></column>
@@ -54,10 +54,20 @@
         :is-locked="false"
         :is-full="false"
         full-message=""
-        @edit-card="handleEditCard"
+        @edit-card="openEditModal"
         @delete-card="handleDeleteCard"
         @move-card="handleMoveCard"
       ></column>
+    </div>
+
+    <div v-if="isEditModalOpen" class="modal-overlay">
+      <div class="modal">
+        <edit-card-form
+          :card="selectedCard"
+          @save-card="handleSaveCard"
+          @close-modal="closeEditModal"
+        ></edit-card-form>
+      </div>
     </div>
   </div>
 </body>
