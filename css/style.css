@@ -117,3 +117,27 @@ body {
     color: #888;
   }
 
+textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical; 
+}
+
+input[type="date"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.card p {
+  margin: 5px 0;
+}
+
+.card p strong {
+  font-weight: bold;
+}

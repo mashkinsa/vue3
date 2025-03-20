@@ -28,12 +28,13 @@ Vue.component('add-card-form', {
   methods: {
     addCard() {
       const newCard = {
-        id: Date.now(),
+        id: Date.now(), 
         title: this.newCardTitle,
         description: this.newCardDescription,
         deadline: this.newCardDeadline,
-        createdAt: new Date().toLocaleString(),
-        lastEdited: new Date().toLocaleString(),
+        createdAt: new Date().toLocaleString(), 
+        lastEdited: new Date().toLocaleString(), 
+        status: 'planned', 
       };
       this.$emit('add-card', newCard);
       this.resetForm();
@@ -116,24 +117,39 @@ new Vue({
   el: '#app',
   data() {
     return {
-      plannedTasks: [],
-      inProgressTasks: [],
-      testingTasks: [],
+      plannedTasks: [], 
+      inProgressTasks: [], 
+      testingTasks: [], 
       completedTasks: [],
     };
   },
   methods: {
     handleAddCard(newCard) {
-      this.plannedTasks.push(newCard);
+      this.plannedTasks.push(newCard); 
     },
     handleEditCard(card) {
-      //редактирование карточки
+      card.lastEdited = new Date().toLocaleString(); 
     },
     handleDeleteCard(card) {
-      //удаление карточки
+      this.plannedTasks = this.plannedTasks.filter(c => c.id !== card.id);
+      this.inProgressTasks = this.inProgressTasks.filter(c => c.id !== card.id);
+      this.testingTasks = this.testingTasks.filter(c => c.id !== card.id);
+      this.completedTasks = this.completedTasks.filter(c => c.id !== card.id);
     },
     handleMoveCard(card) {
-      //перемещение карточки
+      if (card.status === 'planned') {
+        this.plannedTasks = this.plannedTasks.filter(c => c.id !== card.id);
+        card.status = 'inProgress';
+        this.inProgressTasks.push(card);
+      } else if (card.status === 'inProgress') {
+        this.inProgressTasks = this.inProgressTasks.filter(c => c.id !== card.id);
+        card.status = 'testing';
+        this.testingTasks.push(card);
+      } else if (card.status === 'testing') {
+        this.testingTasks = this.testingTasks.filter(c => c.id !== card.id);
+        card.status = 'completed';
+        this.completedTasks.push(card);
+      }
     },
   },
 });
