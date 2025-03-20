@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Приложение для заметок</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script defer src="js/vue.min.js"></script>
+  <script defer src="js/script.js"></script>
+</head>
+<body>
+  <div id="app">
+    <h1>To Do</h1>
+
+    <div class="add-card-form">
+      <h2>Добавить новую карточку</h2>
+      <input v-model="newCardTitle" placeholder="Заголовок карточки" class="input-field">
+      <div v-for="(item, index) in newCardItems" :key="index" class="item-input">
+        <input v-model="item.text" :placeholder="'Пункт ' + (index + 1)" class="input-field">
+        <button @click="removeItem(index)" class="remove-item-btn">×</button>
+      </div>
+      <button @click="addItem" class="add-item-btn">Добавить пункт</button>
+      <button @click="addCard" class="add-card-btn" :disabled="!isCardValid || isFirstColumnFull || isFirstColumnLocked">Добавить карточку</button>
+      <p v-if="!isCardValid" class="error-message">Карточка должна содержать от 3 до 5 пунктов.</p>
+
+  
+    </div>
+
+    <div class="columns">
+      <div class="column" :class="{ locked: isFirstColumnLocked }">
+        <h2>Выполнить (до 3 карточек)</h2>
+        <p v-if="isFirstColumnFull" class="error-message">Первый столбец заполнен (максимум 3 карточки).</p>
+        <transition-group name="card-move" tag="div">
+          <div v-for="(card, index) in columns[0]" :key="card.id" class="card">
+            <h3>{{ card.title }}</h3>
+            <ul>
+              <li v-for="(item, i) in card.items" :key="i">
+                <input type="checkbox" v-model="item.completed" @change="updateCardStatus(card)">
+                <span :class="{ completed: item.completed }">{{ item.text }}</span>
+              </li>
+            </ul>
+          </div>
+        </transition-group>
+      </div>
+
+      <div class="column">
+        <h2>В работе (до 5 карточек)</h2>
+        <p v-if="isSecondColumnFull" class="error-message">Второй столбец заполнен (максимум 5 карточек).</p>
+        <transition-group name="card-move" tag="div">
+          <div v-for="(card, index) in columns[1]" :key="card.id" class="card">
+            <h3>{{ card.title }}</h3>
+            <ul>
+              <li v-for="(item, i) in card.items" :key="i">
+                <input type="checkbox" v-model="item.completed" @change="updateCardStatus(card)">
+                <span :class="{ completed: item.completed }">{{ item.text }}</span>
+              </li>
+            </ul>
+          </div>
+        </transition-group>
+      </div>
+
+      <div class="column">
+        <h2>Готово</h2>
+        <transition-group name="card-move" tag="div">
+          <div v-for="(card, index) in columns[2]" :key="card.id" class="card">
+            <h3>{{ card.title }}</h3>
+            <ul>
+              <li v-for="(item, i) in card.items" :key="i">
+                <input type="checkbox" v-model="item.completed" @change="updateCardStatus(card)">
+                <span :class="{ completed: item.completed }">{{ item.text }}</span>
+              </li>
+            </ul>
+            <p v-if="card.completedDate">Завершено: {{ card.completedDate }}</p>
+          </div>
+        </transition-group>
+      </div>
+    </div>
+  </div>
+</body>
+</html
