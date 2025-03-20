@@ -50,10 +50,6 @@ Vue.component('add-card-form', {
 Vue.component('card', {
   props: {
     card: Object,
-  canEdit: {
-      type: Boolean,
-      default: true,
-    },
   },
   template: `
     <div class="card">
@@ -62,7 +58,7 @@ Vue.component('card', {
       <p><strong>Дэдлайн:</strong> {{ card.deadline }}</p>
       <p><strong>Создано:</strong> {{ card.createdAt }}</p>
       <p><strong>Последнее редактирование:</strong> {{ card.lastEdited }}</p>
-      <button v-if="canEdit" @click="editCard">Редактировать</button>
+      <button @click="editCard">Редактировать</button>
       <button @click="deleteCard">Удалить</button>
       <button @click="moveCard">Переместить</button>
     </div>
@@ -84,14 +80,10 @@ Vue.component('column', {
   props: {
     title: String,
     cards: Array,
-    isLocked: Boolean,
-    isFull: Boolean,
-    fullMessage: String,
   },
   template: `
-    <div class="column" :class="{ locked: isLocked }">
+    <div class="column">
       <h2>{{ title }}</h2>
-      <p v-if="isFull" class="error-message">{{ fullMessage }}</p>
       <transition-group name="card-move" tag="div">
         <card
           v-for="card in cards"
@@ -187,14 +179,17 @@ new Vue({
     },
     handleMoveCard(card) {
       if (card.status === 'planned') {
+        // Перемещение из первого столбца во второй
         this.plannedTasks = this.plannedTasks.filter(c => c.id !== card.id);
         card.status = 'inProgress';
         this.inProgressTasks.push(card);
       } else if (card.status === 'inProgress') {
+        // Перемещение из второго столбца в третий
         this.inProgressTasks = this.inProgressTasks.filter(c => c.id !== card.id);
         card.status = 'testing';
         this.testingTasks.push(card);
       } else if (card.status === 'testing') {
+        // Перемещение из третьего столбца в четвертый
         this.testingTasks = this.testingTasks.filter(c => c.id !== card.id);
         card.status = 'completed';
         this.completedTasks.push(card);

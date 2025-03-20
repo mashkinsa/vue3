@@ -18,9 +18,6 @@
       <column
         title="Запланированные задачи"
         :cards="plannedTasks"
-        :is-locked="false"
-        :is-full="plannedTasks.length >= 3"
-        full-message="Первый столбец заполнен (максимум 3 карточки)."
         @edit-card="openEditModal"
         @delete-card="handleDeleteCard"
         @move-card="handleMoveCard"
@@ -29,9 +26,6 @@
       <column
         title="Задачи в работе"
         :cards="inProgressTasks"
-        :is-locked="false"
-        :is-full="inProgressTasks.length >= 5"
-        full-message="Второй столбец заполнен (максимум 5 карточек)."
         @edit-card="openEditModal"
         @delete-card="handleDeleteCard"
         @move-card="handleMoveCard"
@@ -40,9 +34,6 @@
       <column
         title="Тестирование"
         :cards="testingTasks"
-        :is-locked="false"
-        :is-full="false"
-        full-message=""
         @edit-card="openEditModal"
         @delete-card="handleDeleteCard"
         @move-card="handleMoveCard"
@@ -51,9 +42,6 @@
       <column
         title="Выполненные задачи"
         :cards="completedTasks"
-        :is-locked="false"
-        :is-full="false"
-        full-message=""
         @edit-card="openEditModal"
         @delete-card="handleDeleteCard"
         @move-card="handleMoveCard"
