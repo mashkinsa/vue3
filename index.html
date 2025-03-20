@@ -10,53 +10,15 @@
 </head>
 <body>
   <div id="app">
-    <h1>Kanban Доска</h1>
-
     <add-card-form @add-card="handleAddCard"></add-card-form>
-
     <div class="columns">
-      <column
-        title="Запланированные задачи"
-        :cards="plannedTasks"
-        @edit-card="openEditModal"
-        @delete-card="handleDeleteCard"
-        @move-card="handleMoveCard"
-      ></column>
-
-      <column
-        title="Задачи в работе"
-        :cards="inProgressTasks"
-        @edit-card="openEditModal"
-        @delete-card="handleDeleteCard"
-        @move-card="handleMoveCard"
-      ></column>
-
-      <column
-        title="Тестирование"
-        :cards="testingTasks"
-        @edit-card="openEditModal"
-        @delete-card="handleDeleteCard"
-        @move-card="handleMoveCard"
-      ></column>
-
-      <column
-        title="Выполненные задачи"
-        :cards="completedTasks"
-        @edit-card="openEditModal"
-        @delete-card="handleDeleteCard"
-        @move-card="handleMoveCard"
-      ></column>
+      <column title="Запланировано" :cards="plannedTasks" @edit-card="openEditModal" @delete-card="handleDeleteCard" @move-card="handleMoveCard" :show-move-button="true"></column>
+      <column title="В процессе" :cards="inProgressTasks" @edit-card="openEditModal" @delete-card="handleDeleteCard" @move-card="handleMoveCard" :show-move-button="true"></column>
+      <column title="Тестирование" :cards="testingTasks" @edit-card="openEditModal" @delete-card="handleDeleteCard" @move-card="handleMoveCard" @return-card="handleReturnCard" :show-move-button="true"></column>
+      <column title="Завершено" :cards="completedTasks" @edit-card="openEditModal" @delete-card="handleDeleteCard" :show-move-button="false"></column>
     </div>
-
-    <div v-if="isEditModalOpen" class="modal-overlay">
-      <div class="modal">
-        <edit-card-form
-          :card="selectedCard"
-          @save-card="handleSaveCard"
-          @close-modal="closeEditModal"
-        ></edit-card-form>
-      </div>
-    </div>
+    <edit-card-form v-if="isEditModalOpen" :card="selectedCard" @save-card="handleSaveCard" @close-modal="closeEditModal"></edit-card-form>
+    <return-card-form v-if="isReturnModalOpen" :card="selectedCard" @confirm-return="confirmReturn" @close-modal="closeReturnModal"></return-card-form>
   </div>
 </body>
 </html>
