@@ -52,7 +52,8 @@ Vue.component('add-card-form', {
 Vue.component('card', {
   props: {
     card: Object,
-    showMoveButton: Boolean, // Пропс для отображения кнопки "Переместить"
+    showMoveButton: Boolean, 
+    showEditButton: Boolean,
   },
   template: `
   <div class="card" :class="{ overdue: card.isOverdue, completed: !card.isOverdue && card.status === 'completed' }">
@@ -69,9 +70,9 @@ Vue.component('card', {
     <p v-if="card.status === 'inProgress' && card.returnReason">
       <strong>Причина возврата:</strong> {{ card.returnReason }}
     </p>
-    <button @click="editCard">Редактировать</button>
     <button @click="deleteCard">Удалить</button>
     <button v-if="showMoveButton" @click="moveCard">Переместить</button>
+    <button v-if="showEditButton" @click="editCard">Редактировать</button>
     <button v-if="card.status === 'testing'" @click="returnCard">Вернуть</button>
   </div>
 `,
@@ -95,7 +96,8 @@ Vue.component('column', {
   props: {
     title: String,
     cards: Array,
-    showMoveButton: Boolean, // Пропс для отображения кнопки "Переместить"
+    showMoveButton: Boolean,
+    showEditButton: Boolean, 
   },
   template: `
     <div class="column">
@@ -106,6 +108,7 @@ Vue.component('column', {
           :key="card.id"
           :card="card"
           :show-move-button="showMoveButton"
+          :show-edit-button="showEditButton"
           @edit-card="handleEditCard"
           @delete-card="handleDeleteCard"
           @move-card="handleMoveCard"

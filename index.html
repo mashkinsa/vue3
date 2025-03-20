@@ -12,10 +12,10 @@
   <div id="app">
     <add-card-form @add-card="handleAddCard"></add-card-form>
     <div class="columns">
-      <column title="Запланировано" :cards="plannedTasks" @edit-card="openEditModal" @delete-card="handleDeleteCard" @move-card="handleMoveCard" :show-move-button="true"></column>
-      <column title="В процессе" :cards="inProgressTasks" @edit-card="openEditModal" @delete-card="handleDeleteCard" @move-card="handleMoveCard" :show-move-button="true"></column>
+      <column title="Запланировано" :cards="plannedTasks" @edit-card="openEditModal" @delete-card="handleDeleteCard" @move-card="handleMoveCard" :show-move-button="true" :show-edit-button="true"></column>
+      <column title="В процессе" :cards="inProgressTasks" @edit-card="openEditModal" @delete-card="handleDeleteCard" @move-card="handleMoveCard" :show-move-button="true" :show-edit-button="true"></column>
       <column title="Тестирование" :cards="testingTasks" @edit-card="openEditModal" @delete-card="handleDeleteCard" @move-card="handleMoveCard" @return-card="handleReturnCard" :show-move-button="true"></column>
-      <column title="Завершено" :cards="completedTasks" @edit-card="openEditModal" @delete-card="handleDeleteCard" :show-move-button="false"></column>
+      <column title="Завершено" :cards="completedTasks" @edit-card="openEditModal" @delete-card="handleDeleteCard" :show-move-button="false" :show-edit-button="false"></column>
     </div>
     <edit-card-form v-if="isEditModalOpen" :card="selectedCard" @save-card="handleSaveCard" @close-modal="closeEditModal"></edit-card-form>
     <return-card-form v-if="isReturnModalOpen" :card="selectedCard" @confirm-return="confirmReturn" @close-modal="closeReturnModal"></return-card-form>
