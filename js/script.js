@@ -1,112 +1,139 @@
+Vue.component('add-card-form', {
+  template: `
+    <div class="add-card-form">
+      <h2>Добавить новую карточку</h2>
+      <input v-model="newCardTitle" placeholder="Заголовок карточки" class="input-field">
+      <textarea v-model="newCardDescription" placeholder="Описание задачи" class="input-field"></textarea>
+      <input type="date" v-model="newCardDeadline" class="input-field">
+      <button @click="addCard" :disabled="!isCardValid">Добавить карточку</button>
+      <p v-if="!isCardValid" class="error-message">Заполните все поля.</p>
+    </div>
+  `,
+  data() {
+    return {
+      newCardTitle: '',
+      newCardDescription: '',
+      newCardDeadline: '',
+    };
+  },
+  computed: {
+    isCardValid() {
+      return (
+        this.newCardTitle.trim() !== '' &&
+        this.newCardDescription.trim() !== '' &&
+        this.newCardDeadline.trim() !== ''
+      );
+    },
+  },
+  methods: {
+    addCard() {
+      const newCard = {
+        id: Date.now(),
+        title: this.newCardTitle,
+        description: this.newCardDescription,
+        deadline: this.newCardDeadline,
+        createdAt: new Date().toLocaleString(),
+        lastEdited: new Date().toLocaleString(),
+      };
+      this.$emit('add-card', newCard);
+      this.resetForm();
+    },
+    resetForm() {
+      this.newCardTitle = '';
+      this.newCardDescription = '';
+      this.newCardDeadline = '';
+    },
+  },
+});
+
+Vue.component('card', {
+  props: {
+    card: Object,
+  },
+  template: `
+    <div class="card">
+      <h3>{{ card.title }}</h3>
+      <p>{{ card.description }}</p>
+      <p><strong>Дэдлайн:</strong> {{ card.deadline }}</p>
+      <p><strong>Создано:</strong> {{ card.createdAt }}</p>
+      <p><strong>Последнее редактирование:</strong> {{ card.lastEdited }}</p>
+      <button @click="editCard">Редактировать</button>
+      <button @click="deleteCard">Удалить</button>
+      <button @click="moveCard">Переместить</button>
+    </div>
+  `,
+  methods: {
+    editCard() {
+      this.$emit('edit-card', this.card);
+    },
+    deleteCard() {
+      this.$emit('delete-card', this.card);
+    },
+    moveCard() {
+      this.$emit('move-card', this.card);
+    },
+  },
+});
+
+Vue.component('column', {
+  props: {
+    title: String,
+    cards: Array,
+    isLocked: Boolean,
+    isFull: Boolean,
+    fullMessage: String,
+  },
+  template: `
+    <div class="column" :class="{ locked: isLocked }">
+      <h2>{{ title }}</h2>
+      <p v-if="isFull" class="error-message">{{ fullMessage }}</p>
+      <transition-group name="card-move" tag="div">
+        <card
+          v-for="card in cards"
+          :key="card.id"
+          :card="card"
+          @edit-card="handleEditCard"
+          @delete-card="handleDeleteCard"
+          @move-card="handleMoveCard"
+        ></card>
+      </transition-group>
+    </div>
+  `,
+  methods: {
+    handleEditCard(card) {
+      this.$emit('edit-card', card);
+    },
+    handleDeleteCard(card) {
+      this.$emit('delete-card', card);
+    },
+    handleMoveCard(card) {
+      this.$emit('move-card', card);
+    },
+  },
+});
+
 new Vue({
-    el: '#app',
-    data: {
-      columns: [
-        [], // Первый столбец 
-        [], // Второй столбец 
-        []  // Третий столбец 
-      ],
-      nextCardId: 1, // Уникальный ID для карточек
-      newCardTitle: '', // Заголовок новой карточки
-      newCardItems: [{ text: '' }, { text: '' }, { text: '' }], // Пункты новой карточки
-      isFirstColumnLocked: false // Блокировка первого столбца
+  el: '#app',
+  data() {
+    return {
+      plannedTasks: [],
+      inProgressTasks: [],
+      testingTasks: [],
+      completedTasks: [],
+    };
+  },
+  methods: {
+    handleAddCard(newCard) {
+      this.plannedTasks.push(newCard);
     },
-    computed: {
-      // Проверка валидности карточки
-      isCardValid() {
-        return (
-          this.newCardTitle.trim() !== '' &&
-          this.newCardItems.length >= 3 &&
-          this.newCardItems.length <= 5 &&
-          this.newCardItems.every(item => item.text.trim() !== '')
-        );
-      },
-      // Проверка, заполнен ли первый столбец
-      isFirstColumnFull() {
-        return this.columns[0].length >= 3;
-      },
-      // Проверка, заполнен ли второй столбец
-      isSecondColumnFull() {
-        return this.columns[1].length >= 5;
-      }
+    handleEditCard(card) {
+      //редактирование карточки
     },
-    methods: {
-      // Добавить пункт в новую карточку
-      addItem() {
-        if (this.newCardItems.length < 5) {
-          this.newCardItems.push({ text: '' });
-        }
-      },
-      // Удалить пункт из новой карточки
-      removeItem(index) {
-        if (this.newCardItems.length > 3) {
-          this.newCardItems.splice(index, 1);
-        }
-      },
-      // Добавить новую карточку в первый столбец
-      addCard() {
-        if (this.isCardValid && !this.isFirstColumnFull && !this.isFirstColumnLocked) {
-          this.columns[0].push({
-            id: this.nextCardId++,
-            title: this.newCardTitle,
-            items: this.newCardItems.map(item => ({ text: item.text, completed: false })),
-            completedDate: null
-          });
-          // Сбросить форму
-          this.newCardTitle = '';
-          this.newCardItems = [{ text: '' }, { text: '' }, { text: '' }];
-          this.saveData(); // Сохраняем данные
-        }
-      },
-      // Обновить статус карточки (перемещение между столбцами)
-      updateCardStatus(card) {
-        const completedItems = card.items.filter(item => item.completed).length;
-        const totalItems = card.items.length;
-        const completionPercentage = (completedItems / totalItems) * 100;
-  
-        // Перемещение карточки в зависимости от процента выполнения
-        if (completionPercentage > 50 && completionPercentage < 100) {
-          if (!this.isSecondColumnFull) {
-            this.moveCard(card, 0, 1); // Из первого столбца во второй
-          } else {
-            this.isFirstColumnLocked = true; // Блокируем первый столбец
-          }
-        } else if (completionPercentage === 100) {
-          this.moveCard(card, 1, 2); // Из второго столбца в третий
-          card.completedDate = new Date().toLocaleString(); // Добавляем дату завершения
-          this.isFirstColumnLocked = false; // Разблокируем первый столбец
-        }
-        this.saveData(); // Сохраняем данные
-      },
-      // Перемещение карточки между столбцами
-      moveCard(card, fromColumnIndex, toColumnIndex) {
-        const cardIndex = this.columns[fromColumnIndex].findIndex(c => c.id === card.id);
-        if (cardIndex !== -1) {
-          const [movedCard] = this.columns[fromColumnIndex].splice(cardIndex, 1);
-          this.columns[toColumnIndex].push(movedCard);
-        }
-      },
-      // Сохранение данных в localStorage
-      saveData() {
-        const data = {
-          columns: this.columns,
-          nextCardId: this.nextCardId,
-          isFirstColumnLocked: this.isFirstColumnLocked
-        };
-        localStorage.setItem('notesAppData', JSON.stringify(data));
-      },
-      // Загрузка данных из localStorage
-      loadData() {
-        const data = JSON.parse(localStorage.getItem('notesAppData'));
-        if (data) {
-          this.columns = data.columns;
-          this.nextCardId = data.nextCardId;
-          this.isFirstColumnLocked = data.isFirstColumnLocked;
-        }
-      }
+    handleDeleteCard(card) {
+      //удаление карточки
     },
-    // Загружаем данные при запуске приложения
-    created() {
-      this.loadData();
-    }
-  });
+    handleMoveCard(card) {
+      //перемещение карточки
+    },
+  },
+});
