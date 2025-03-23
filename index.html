@@ -10,15 +10,32 @@
 </head>
 <body>
   <div id="app">
-    <add-card-form @add-card="handleAddCard"></add-card-form>
+    <button @click="openAddCardModal" class="add-card-button">Добавить карточку</button>
+  
     <div class="columns">
       <column title="Запланировано" :cards="plannedTasks" @edit-card="openEditModal" @delete-card="handleDeleteCard" @move-card="handleMoveCard" :show-move-button="true" :show-edit-button="true"></column>
       <column title="В процессе" :cards="inProgressTasks" @edit-card="openEditModal" @delete-card="handleDeleteCard" @move-card="handleMoveCard" :show-move-button="true" :show-edit-button="true"></column>
-      <column title="Тестирование" :cards="testingTasks" @edit-card="openEditModal" @delete-card="handleDeleteCard" @move-card="handleMoveCard" @return-card="handleReturnCard" :show-move-button="true"></column>
+      <column title="Тестирование" :cards="testingTasks" @edit-card="openEditModal" @delete-card="handleDeleteCard" @move-card="handleMoveCard" @return-card="openReturnModal" :show-move-button="true" :show-edit-button="true"></column>
       <column title="Завершено" :cards="completedTasks" @edit-card="openEditModal" @delete-card="handleDeleteCard" :show-move-button="false" :show-edit-button="false"></column>
     </div>
-    <edit-card-form v-if="isEditModalOpen" :card="selectedCard" @save-card="handleSaveCard" @close-modal="closeEditModal"></edit-card-form>
-    <return-card-form v-if="isReturnModalOpen" :card="selectedCard" @confirm-return="confirmReturn" @close-modal="closeReturnModal"></return-card-form>
+  
+    <div v-if="isAddCardModalOpen" class="modal-overlay">
+      <div class="modal">
+        <add-card-modal @add-card="handleAddCard" @close-modal="closeAddCardModal"></add-card-modal>
+      </div>
+    </div>
+  
+    <div v-if="isEditModalOpen" class="modal-overlay">
+      <div class="modal">
+        <edit-card-form :card="selectedCard" @save-card="handleSaveCard" @close-modal="closeEditModal"></edit-card-form>
+      </div>
+    </div>
+  
+    <div v-if="isReturnModalOpen" class="modal-overlay">
+      <div class="modal">
+        <return-card-form :card="selectedCard" @confirm-return="confirmReturn" @close-modal="closeReturnModal"></return-card-form>
+      </div>
+    </div>
   </div>
 </body>
 </html>

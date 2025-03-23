@@ -1,11 +1,12 @@
-Vue.component('add-card-form', {
+Vue.component('add-card-modal', {
   template: `
-    <div class="add-card-form">
+    <div class="add-card-modal">
       <h2>Добавить новую карточку</h2>
       <input v-model="newCardTitle" placeholder="Заголовок карточки" class="input-field">
       <textarea v-model="newCardDescription" placeholder="Описание задачи" class="input-field"></textarea>
       <input type="date" v-model="newCardDeadline" class="input-field">
-      <button @click="addCard" :disabled="!isCardValid">Добавить карточку</button>
+      <button @click="addCard" :disabled="!isCardValid" >Добавить карточку</button>
+      <button @click="closeModal" class="cancel">Отмена</button>
       <p v-if="!isCardValid" class="error-message">Заполните все поля.</p>
     </div>
   `,
@@ -35,47 +36,54 @@ Vue.component('add-card-form', {
         createdAt: new Date().toLocaleString(),
         lastEdited: new Date().toLocaleString(),
         status: 'planned',
-        isOverdue: false, // Новое поле для хранения статуса просрочки
-        returnReason: '', // Новое поле для хранения причины возврата
+        isOverdue: false,
+        returnReason: [],
       };
       this.$emit('add-card', newCard);
       this.resetForm();
+      this.closeModal();
     },
     resetForm() {
       this.newCardTitle = '';
       this.newCardDescription = '';
       this.newCardDeadline = '';
     },
+    closeModal() {
+      this.$emit('close-modal');
+    },
   },
 });
-
 Vue.component('card', {
   props: {
     card: Object,
-    showMoveButton: Boolean, 
+    showMoveButton: Boolean,
     showEditButton: Boolean,
   },
   template: `
-  <div class="card" :class="{ overdue: card.isOverdue, completed: !card.isOverdue && card.status === 'completed' }">
-    <h3>{{ card.title }}</h3>
-    <p>{{ card.description }}</p>
-    <p><strong>Дедлайн:</strong> {{ card.deadline }}</p>
-    <p><strong>Создано:</strong> {{ card.createdAt }}</p>
-    <p><strong>Последнее редактирование:</strong> {{ card.lastEdited }}</p>
-    <p v-if="card.status === 'completed'">
-      <strong>Статус:</strong>
-      <span v-if="card.isOverdue" class="status overdue">Просрочено</span>
-      <span v-else class="status completed">Выполнено в срок</span>
-    </p>
-    <p v-if="card.status === 'inProgress' && card.returnReason">
-      <strong>Причина возврата:</strong> {{ card.returnReason }}
-    </p>
-    <button @click="deleteCard">Удалить</button>
-    <button v-if="showMoveButton" @click="moveCard">Переместить</button>
-    <button v-if="showEditButton" @click="editCard">Редактировать</button>
-    <button v-if="card.status === 'testing'" @click="returnCard">Вернуть</button>
-  </div>
-`,
+    <div class="card" :class="{ overdue: card.isOverdue, completed: !card.isOverdue && card.status === 'completed' }">
+      <h3>{{ card.title }}</h3>
+      <p>{{ card.description }}</p>
+      <p><strong>Дедлайн:</strong> {{ card.deadline }}</p>
+      <p><strong>Создано:</strong> {{ card.createdAt }}</p>
+      <p><strong>Последнее редактирование:</strong> {{ card.lastEdited }}</p>
+      <p v-if="card.status === 'completed'">
+        <strong>Статус:</strong>
+        <span v-if="card.isOverdue" class="status overdue">Просрочено</span>
+        <span v-else class="status completed">Выполнено в срок</span>
+      </p>
+      <!-- Отображаем причины возврата, если они есть -->
+      <div v-if="card.returnReason.length > 0">
+        <strong>Причины возврата:</strong>
+        <ul>
+          <li v-for="(reason, index) in card.returnReason" :key="index">{{ reason }}</li>
+        </ul>
+      </div>
+      <button @click="deleteCard">Удалить</button>
+      <button v-if="showMoveButton" @click="moveCard">Переместить</button>
+      <button v-if="showEditButton" @click="editCard">Редактировать</button>
+      <button v-if="card.status === 'testing'" @click="returnCard">Вернуть</button>
+    </div>
+  `,
   methods: {
     editCard() {
       this.$emit('edit-card', this.card);
@@ -91,13 +99,12 @@ Vue.component('card', {
     },
   },
 });
-
 Vue.component('column', {
   props: {
     title: String,
     cards: Array,
     showMoveButton: Boolean,
-    showEditButton: Boolean, 
+    showEditButton: Boolean,
   },
   template: `
     <div class="column">
@@ -185,7 +192,9 @@ Vue.component('return-card-form', {
   },
   methods: {
     confirmReturn() {
-      this.$emit('confirm-return', { ...this.card, returnReason: this.returnReason });
+      const updatedCard = { ...this.card };
+      updatedCard.returnReason.push(this.returnReason);
+      this.$emit('confirm-return', updatedCard);
       this.closeModal();
     },
     closeModal() {
@@ -202,12 +211,19 @@ new Vue({
       inProgressTasks: [],
       testingTasks: [],
       completedTasks: [],
+      isAddCardModalOpen: false, // Состояние для модального окна добавления карточки
       isEditModalOpen: false,
       isReturnModalOpen: false,
       selectedCard: null,
     };
   },
   methods: {
+    openAddCardModal() {
+      this.isAddCardModalOpen = true; // Открываем модальное окно добавления карточки
+    },
+    closeAddCardModal() {
+      this.isAddCardModalOpen = false; // Закрываем модальное окно добавления карточки
+    },
     handleAddCard(newCard) {
       this.plannedTasks.push(newCard);
     },
@@ -251,14 +267,14 @@ new Vue({
       } else if (card.status === 'testing') {
         this.testingTasks = this.testingTasks.filter(c => c.id !== card.id);
         card.status = 'completed';
-        this.checkDeadline(card); // Проверяем дедлайн при перемещении в четвертый столбец
+        this.checkDeadline(card);
         this.completedTasks.push(card);
       }
     },
     checkDeadline(card) {
       const currentDate = new Date();
       const deadlineDate = new Date(card.deadline);
-      card.isOverdue = currentDate > deadlineDate; // Устанавливаем статус просрочки
+      card.isOverdue = currentDate > deadlineDate;
     },
     handleReturnCard(card) {
       this.openReturnModal(card);
